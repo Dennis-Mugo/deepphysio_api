@@ -101,3 +101,7 @@ def email_verification(email: str, token: str):
 
     """
     return html
+
+
+
+
