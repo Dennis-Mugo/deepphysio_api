@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 mapping = {
-    "edd7fc95-2cd3-4b01-8b65-eca88caf3f8c": os.getenv("MAIL_PASS_HAWI")
+    "edd7fc95-2cd3-4b01-8b65-eca88caf3f8c": os.getenv("MAIL_PASS_SMARTBAND")
 }
 
 

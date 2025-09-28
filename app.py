@@ -8,6 +8,7 @@ import mail_html
 import dynamic_mail
 import os
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 
@@ -16,6 +17,10 @@ CORS(app)
 
 app.config.update(utils.MAIL_CONFIG)
 mail = Mail(app)
+
+
+# mail_url = "http://127.0.0.1:5000"
+mail_url = "https://outofctrl.site"
 
 
 
@@ -95,18 +100,43 @@ def send_verification_email():
     }
 
     try:
+        physioguide_api_key = os.getenv("PHYSIOGUIDE_MAIL_API_KEY", None)
+        if not physioguide_api_key:
+            res["errors"].append("Server email API key configuration error.")
+            res["status"] = 500
+            return jsonify(res)
+        
         body = json.loads(request.data)
         email = body.get("email")
         token = body.get("token")
 
-        msg = Message(
-            subject="PhysioGuide Email Verification",
-            recipients=[email]
-        )
+        # msg = Message(
+        #     subject="PhysioGuide Email Verification",
+        #     recipients=[email]
+        # )
         email_body = mail_html.email_verification(email, token)
-        msg.html = email_body
-        mail.send(msg)
-        res["data"] = {"success": True}
+        # msg.html = email_body
+        # mail.send(msg)
+
+        response = requests.post(
+            url=f"{mail_url}/public_mail_send",
+            json={
+                "apiKey": physioguide_api_key,
+                "senderEmail": "dennismthairu@gmail.com",
+                "subject": "PhysioGuide Email Verification",
+                "appName": "PhysioGuide",
+                "recipientEmail": email,
+                "html" : email_body,
+            },
+        )
+
+        response = response.json()
+        if response["status"] != 200 or len(response.get("errors", [])) > 0:
+            res["errors"].append(f"Failed to send verification email. {response['errors'][0] if len(response.get('errors', [])) > 0 else ''}")
+            res["status"] = 500
+            res["data"] = {}
+        else:
+            res["data"] = {"success": True}
         return jsonify(res)
     
     except Exception as e:
@@ -147,21 +177,27 @@ def public_mail_send():
             res["status"] = 400
             return jsonify(res)
 
-        result = dynamic_mail.send_dynamic_email(
-            sender_email=sender_email,
-            sender_name=app_name,
-            sender_password=dynamic_mail.mapping[api_key],
-            recipient_email=email,
-            subject=subject,
-            html=html,
-            body=email_body
+        response = requests.post(
+            url=f"{mail_url}/public_mail_send",
+            json={
+                "apiKey": api_key,
+                "senderEmail": sender_email,
+                "subject": subject,
+                "appName": app_name,
+                "recipientEmail": email,
+                "html" : html,
+                "emailBody": email_body
+            },
         )
 
-        if "error" in result:
-            res["errors"].append(result["error"])
-            res["status"] = 400
+        response = response.json()
+        if response["status"] != 200 or len(response.get("errors", [])) > 0:
+            res["errors"].append(f"Failed to send verification email. {response['errors'][0] if len(response.get('errors', [])) > 0 else ''}")
+            res["status"] = 500
+            res["data"] = {}
         else:
             res["data"] = {"success": True}
+    
         return jsonify(res)
 
     except Exception as e:
