@@ -119,7 +119,7 @@ def send_verification_email():
         # msg.html = email_body
         # mail.send(msg)
 
-        app_password = "rzpcwhnrgmtyziod"
+        app_password = os.getenv("MAIL_PASS")
 
         response = requests.post(
             url=f"{mail_url}",
