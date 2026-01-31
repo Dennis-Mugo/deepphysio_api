@@ -139,18 +139,18 @@ def send_verification_email():
                 "app_password": app_password,
                 "recipient_email": email,
                 "subject": "PhysioGuide Email Verification",
-                "text_body": "",
+                "text_body": "Please verify your email.",
                 "html_body": email_body
             }
         )
 
         response = response.json()
-        if response["status"] != 200 or len(response.get("errors", [])) > 0:
-            res["errors"].append(f"Failed to send verification email. {response['errors'][0] if len(response.get('errors', [])) > 0 else ''}")
-            res["status"] = 500
-            res["data"] = {}
-        else:
-            res["data"] = {"success": True}
+        # if response["status"] != 200 or len(response.get("errors", [])) > 0:
+        #     res["errors"].append(f"Failed to send verification email. {response['errors'][0] if len(response.get('errors', [])) > 0 else ''}")
+        #     res["status"] = 500
+        #     res["data"] = {}
+        # else:
+        #     res["data"] = {"success": True}
         return jsonify(res)
     
     except Exception as e:
@@ -217,12 +217,12 @@ def public_mail_send():
         )
 
         response = response.json()
-        if response["status"] != 200 or len(response.get("errors", [])) > 0:
-            res["errors"].append(f"Failed to send verification email. {response['errors'][0] if len(response.get('errors', [])) > 0 else ''}")
-            res["status"] = 500
-            res["data"] = {}
-        else:
-            res["data"] = {"success": True}
+        # if response["status"] != 200 or len(response.get("errors", [])) > 0:
+        #     res["errors"].append(f"Failed to send verification email. {response['errors'][0] if len(response.get('errors', [])) > 0 else ''}")
+        #     res["status"] = 500
+        #     res["data"] = {}
+        # else:
+        #     res["data"] = {"success": True}
     
         return jsonify(res)
 
