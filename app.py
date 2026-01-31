@@ -20,7 +20,8 @@ mail = Mail(app)
 
 
 # mail_url = "http://127.0.0.1:5000"
-mail_url = "https://outofctrl.site"
+# mail_url = "https://outofctrl.site"
+mail_url = "https://services.botibonga.com/send-email"
 
 
 
@@ -100,11 +101,11 @@ def send_verification_email():
     }
 
     try:
-        physioguide_api_key = os.getenv("PHYSIOGUIDE_MAIL_API_KEY", None)
-        if not physioguide_api_key:
-            res["errors"].append("Server email API key configuration error.")
-            res["status"] = 500
-            return jsonify(res)
+        # physioguide_api_key = os.getenv("PHYSIOGUIDE_MAIL_API_KEY", None)
+        # if not physioguide_api_key:
+        #     res["errors"].append("Server email API key configuration error.")
+        #     res["status"] = 500
+        #     return jsonify(res)
         
         body = json.loads(request.data)
         email = body.get("email")
@@ -118,16 +119,29 @@ def send_verification_email():
         # msg.html = email_body
         # mail.send(msg)
 
+        app_password = "rzpcwhnrgmtyziod"
+
         response = requests.post(
-            url=f"{mail_url}/public_mail_send",
+            url=f"{mail_url}",
+            # json={
+            #     "apiKey": physioguide_api_key,
+            #     "senderEmail": "dennismthairu@gmail.com",
+            #     "subject": "PhysioGuide Email Verification",
+            #     "appName": "PhysioGuide",
+            #     "recipientEmail": email,
+            #     "html" : email_body,
+            # },
             json={
-                "apiKey": physioguide_api_key,
-                "senderEmail": "dennismthairu@gmail.com",
+                "smtp_host": "smtp.gmail.com",
+                "smtp_port": 587,
+                "sender_email": "dennismthairu@gmail.com",
+                "sender_name": "PhysioGuide",
+                "app_password": app_password,
+                "recipient_email": email,
                 "subject": "PhysioGuide Email Verification",
-                "appName": "PhysioGuide",
-                "recipientEmail": email,
-                "html" : email_body,
-            },
+                "text_body": "",
+                "html_body": email_body
+            }
         )
 
         response = response.json()
@@ -154,18 +168,19 @@ def public_mail_send():
 
     try:
         body = json.loads(request.data)
-        api_key = body.get("apiKey", None)
-        if not api_key or api_key not in dynamic_mail.mapping:
-            res["errors"].append("Invalid API key.")
-            res["status"] = 400
-            return jsonify(res)
+        # api_key = body.get("apiKey", None)
+        # if not api_key or api_key not in dynamic_mail.mapping:
+        #     res["errors"].append("Invalid API key.")
+        #     res["status"] = 400
+        #     return jsonify(res)
 
         email = body.get("recipientEmail", None)
         subject = body.get("subject", None)
         app_name = body.get("appName", None)
         sender_email = body.get("senderEmail", None)
+        app_password=body.get("appPassword", os.getenv("MAIL_PASS_SMARTBAND"))
 
-        if not all([email, subject, app_name, sender_email]):
+        if not all([email, subject, app_name, sender_email, app_password]):
             res["errors"].append("Missing required fields.")
             res["status"] = 400
             return jsonify(res)
@@ -178,16 +193,27 @@ def public_mail_send():
             return jsonify(res)
 
         response = requests.post(
-            url=f"{mail_url}/public_mail_send",
+            url=f"{mail_url}",
+            # json={
+            #     "apiKey": api_key,
+            #     "senderEmail": sender_email,
+            #     "subject": subject,
+            #     "appName": app_name,
+            #     "recipientEmail": email,
+            #     "html" : html,
+            #     "emailBody": email_body
+            # },
             json={
-                "apiKey": api_key,
-                "senderEmail": sender_email,
+                "smtp_host": "smtp.gmail.com",
+                "smtp_port": 587,
+                "sender_email": sender_email,
+                "sender_name": app_name,
+                "app_password": app_password,
+                "recipient_email": email,
                 "subject": subject,
-                "appName": app_name,
-                "recipientEmail": email,
-                "html" : html,
-                "emailBody": email_body
-            },
+                "text_body": email_body,
+                "html_body": html
+            }
         )
 
         response = response.json()
